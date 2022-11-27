@@ -10,8 +10,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.nfyjflh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -21,6 +19,34 @@ async function run() {
         const categoryCollection = client.db("gearUP").collection("categories");
         const serviceCollection = client.db("gearUP").collection("services");
         const productCollection = client.db("gearUP").collection("products");
+
+
+        const userCollection = client.db("gearUP").collection("usersInfo");
+
+        app.get("/users", async (req, res) => {
+            const query = {};
+            const cursor = userCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
+        });
+
+        // app.get("/users/:id", async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+
+        //     const cursor = userCollection.find(query);
+        //     const user = await cursor.toArray();
+        //     res.send(user);
+        // });
+
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user);
+            // user._id = result.insertedId;
+            res.send(user);
+          });
+
+
 
         app.get("/categories", async (req, res) => {
             const query = {};
@@ -44,7 +70,6 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         });
-  
     } 
   
     finally {
@@ -53,8 +78,6 @@ async function run() {
   }
   
   run().catch((err) => console.error(err));
-
-
 
 app.get('/', (req, res) => {
     res.send("Used Product Resale server is running")
