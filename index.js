@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const e = require("express");
 require("dotenv").config();
 
 const app = express();
@@ -32,6 +33,13 @@ async function run() {
       res.send(users);
     });
 
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      res.send(user);
+    });
+
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
       const query = { email }
@@ -47,26 +55,28 @@ async function run() {
     const user = await userCollection.findOne(query);
     res.send({ isSeller: user?.userType === 'seller' });
   });
-
-
-    // all seller and buyers
-
-    // app.get("/users/:userType", async (req, res) => {
-    //   const userType = req.params.userType.toLowerCase();
-    //   const query = { userType: userType };
-
-    //   const cursor = userCollection.find(query);
-    //   const users = await cursor.toArray();
-    //   res.send(users);
-    // });
     
-
     app.post("/users", async (req, res) => {
       const user = req.body;
-      const result = await userCollection.insertOne(user);
-      // user._id = result.insertedId;
-      res.send(user);
+      const cursor = userCollection.find({email:user.email});
+      const isUserExist = await cursor.toArray();
+      if( !isUserExist.length ){
+        const result = await userCollection.insertOne(user);
+        res.send(user);
+      }
+        return;
     });
+
+    // delete
+
+  //   app.delete('/users/:id', async (req, res) => {
+  //     const id = req.params.id;
+  //     // console.log('trying to delete', id);
+  //     const query = { _id: ObjectId(id) }
+  //     const result = await userCollection.deleteOne(query);
+  //     console.log(result);
+  //     res.send(result);
+  // });
 
     
 
@@ -93,17 +103,13 @@ async function run() {
       res.send(result);
     });
 
-    // tarikul bhai
-
-    // app.get("/category/products/:sellerEmail", async (req, res) => {
-    //   const sellerEmail = req.params.sellerEmail;
-    //   console.log('inside api',sellerEmail);
-    //   const query = { seller_email: sellerEmail };
-
-    //   const cursor = productCollection.find(query);
-    //   const products = await cursor.toArray();
-    //   res.send(products);
-    // });
+    app.get("/category/products/:sellerEmail", async (req, res) => {
+      const sellerEmail = req.params.sellerEmail;
+      const query = { seller_email: sellerEmail };
+      const cursor = productCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    });
 
     app.get("/services", async (req, res) => {
       const query = {};
