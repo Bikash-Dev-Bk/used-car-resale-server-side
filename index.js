@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion,  ObjectId } = require("mongodb");
 const e = require("express");
 require("dotenv").config();
 
@@ -46,8 +46,6 @@ async function run() {
       const user = await userCollection.findOne(query);
       res.send({ isAdmin: user?.userType === 'admin' });
   })
-
-
 
   app.get("/users/seller/:email", async (req, res) => {
     const email = req.params.email;
@@ -109,6 +107,15 @@ async function run() {
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
       res.send(products);
+    });
+
+    app.delete('/category/products/:id', async (req, res) => {
+      const id = req.params.id;
+      // console.log('trying to delete', id);
+      const query = { _id: ObjectId(id) }
+      const result = await productCollection.deleteOne(query);
+      console.log(result);
+      res.send(result);
     });
 
     app.get("/services", async (req, res) => {
