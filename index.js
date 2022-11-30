@@ -65,16 +65,15 @@ async function run() {
         return;
     });
 
-    // delete
+    // deleteUser
 
-  //   app.delete('/users/:id', async (req, res) => {
-  //     const id = req.params.id;
-  //     // console.log('trying to delete', id);
-  //     const query = { _id: ObjectId(id) }
-  //     const result = await userCollection.deleteOne(query);
-  //     console.log(result);
-  //     res.send(result);
-  // });
+  app.delete('/users/:id', async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) }
+    const result = await userCollection.deleteOne(query);
+    console.log(result);
+    res.send(result);
+  });
 
     
 
