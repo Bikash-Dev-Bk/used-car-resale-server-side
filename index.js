@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion,  ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const e = require("express");
 require("dotenv").config();
 
@@ -39,50 +39,59 @@ async function run() {
       const user = await userCollection.findOne(query);
       res.send(user);
     });
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.findOneAndUpdate(
+        query,
+        { $set: { isVerified: true } },
+        { upsert: true, returnNewDocument: true }
+      );
+      res.send(result);
+    });
 
-    app.get('/users/admin/:email', async (req, res) => {
+    app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { email }
+      const query = { email };
       const user = await userCollection.findOne(query);
-      res.send({ isAdmin: user?.userType === 'admin' });
-  })
+      res.send({ isAdmin: user?.userType === "admin" });
+    });
 
-  app.get("/users/seller/:email", async (req, res) => {
-    const email = req.params.email;
-    const query = { email }
-    const user = await userCollection.findOne(query);
-    res.send({ isSeller: user?.userType === 'seller' });
-  });
+    app.get("/users/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isSeller: user?.userType === "seller" });
+    });
 
-  app.get("/users/buyer/:email", async (req, res) => {
-    const email = req.params.email;
-    const query = { email }
-    const user = await userCollection.findOne(query);
-    res.send({ isBuyer: user?.userType === 'buyer' });
-  });
-    
+
+    app.get("/users/buyer/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isBuyer: user?.userType === "buyer" });
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
-      const cursor = userCollection.find({email:user.email});
+      const cursor = userCollection.find({ email: user.email });
       const isUserExist = await cursor.toArray();
-      if( !isUserExist.length ){
+      if (!isUserExist.length) {
         const result = await userCollection.insertOne(user);
         res.send(user);
       }
-        return;
+      return;
     });
 
     // deleteUser
 
-  app.delete('/users/:id', async (req, res) => {
-    const id = req.params.id;
-    const query = { _id: ObjectId(id) }
-    const result = await userCollection.deleteOne(query);
-    console.log(result);
-    res.send(result);
-  });
-
-    
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      console.log(result);
+      res.send(result);
+    });
 
     app.get("/categories", async (req, res) => {
       const query = {};
@@ -106,6 +115,23 @@ async function run() {
       const result = await productCollection.insertOne(product);
       res.send(result);
     });
+    app.put("/category/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      console.log("id", id);
+      const result = await productCollection.findOneAndUpdate(
+        query,
+        { $set: { isAdvertise: true } },
+        { upsert: true, returnNewDocument: true }
+      );
+      res.send(result);
+    });
+    app.get("/category/products/advertise", async (req, res) => {
+      const query = { isAdvertise: true };
+      const cursor = productCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    });
 
     app.get("/category/products/:sellerEmail", async (req, res) => {
       const sellerEmail = req.params.sellerEmail;
@@ -115,10 +141,10 @@ async function run() {
       res.send(products);
     });
 
-    app.delete('/category/products/:id', async (req, res) => {
+    app.delete("/category/products/:id", async (req, res) => {
       const id = req.params.id;
       // console.log('trying to delete', id);
-      const query = { _id: ObjectId(id) }
+      const query = { _id: ObjectId(id) };
       const result = await productCollection.deleteOne(query);
       console.log(result);
       res.send(result);
